@@ -1,86 +1,51 @@
+let currentPlayer = "X";
+let player1Name = "";
+let player2Name = "";
+let gameBoard = ["", "", "", "", "", "", "", "", ""];
+let gameActive = false;
+
+// Start game when players enter names
 document.getElementById("submit").addEventListener("click", function () {
-    let player1 = document.getElementById("player1").value.trim();
-    let player2 = document.getElementById("player2").value.trim();
+    player1Name = document.getElementById("player1").value.trim() || "Player 1";
+    player2Name = document.getElementById("player2").value.trim() || "Player 2";
 
-    if (player1 === "" || player2 === "") {
-        alert("Please enter names for both players!");
-        return;
-    }
-
-    document.getElementById("player-form").classList.add("hidden");
-    document.getElementById("game-board").classList.remove("hidden");
-
-    startGame(player1, player2);
+    document.getElementById("game").style.display = "block";
+    document.querySelector(".message").textContent = `${player1Name}, you're up`;
+    gameActive = true;
 });
 
-function startGame(player1, player2) {
-    let message = document.querySelector(".message");
-    let currentPlayer = "X";
-    let currentUser = player1;
-    let gameActive = true;
-    let boardState = ["", "", "", "", "", "", "", "", ""];
-    let cells = document.querySelectorAll(".cell");
+// Handle cell click events
+document.querySelectorAll(".cell").forEach(cell => {
+    cell.addEventListener("click", function () {
+        if (!gameActive || this.classList.contains("taken")) return;
 
-    message.textContent = `${currentUser}, you're up!`;
+        let cellIndex = parseInt(this.id) - 1;
+        gameBoard[cellIndex] = currentPlayer;
+        this.textContent = currentPlayer;
+        this.classList.add("taken");
 
-    function checkWinner() {
-        const winPatterns = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-            [0, 4, 8], [2, 4, 6] 
-        ];
-
-        for (let pattern of winPatterns) {
-            let [a, b, c] = pattern;
-            if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
-                gameActive = false;
-                setTimeout(() => {
-                    message.textContent = `${currentUser} congratulations you won!`;
-                }, 100); // Ensures Cypress detects update
-                return true;
-            }
+        if (checkWinner()) {
+            document.querySelector(".message").textContent = `${currentPlayer === "X" ? player1Name : player2Name} congratulations you won!`;
+            gameActive = false;
+            return;
         }
-        return false;
-    }
 
-    function checkDraw() {
-        return boardState.every(cell => cell !== "");
-    }
-
-    cells.forEach((cell, index) => {
-        cell.textContent = "";
-        cell.classList.remove("taken");
-
-        cell.addEventListener("click", function () {
-            if (!gameActive || cell.textContent !== "") return;
-
-            boardState[index] = currentPlayer;
-            cell.textContent = currentPlayer;
-            cell.classList.add("taken");
-
-            if (checkWinner()) return;
-
-            if (checkDraw()) {
-                message.textContent = "It's a Draw!";
-                return;
-            }
-
-            currentPlayer = currentPlayer === "X" ? "O" : "X";
-            currentUser = currentPlayer === "X" ? player1 : player2;
-            message.textContent = `${currentUser}, you're up!`;
-        });
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+        document.querySelector(".message").textContent = `${currentPlayer === "X" ? player1Name : player2Name}, you're up`;
     });
+});
 
-    document.getElementById("restart").addEventListener("click", function () {
-        boardState.fill("");
-        gameActive = true;
-        message.textContent = `${player1}, you're up!`;
-        currentPlayer = "X";
-        currentUser = player1;
+// Check for a winner
+function checkWinner() {
+    const winPatterns = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+        [0, 4, 8], [2, 4, 6]             // Diagonals
+    ];
 
-        cells.forEach(cell => {
-            cell.textContent = "";
-            cell.classList.remove("taken");
-        });
-    });
+    return winPatterns.some(pattern => 
+        gameBoard[pattern[0]] &&
+        gameBoard[pattern[0]] === gameBoard[pattern[1]] &&
+        gameBoard[pattern[1]] === gameBoard[pattern[2]]
+    );
 }
