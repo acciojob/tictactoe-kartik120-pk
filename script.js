@@ -1,4 +1,4 @@
-document.getElementById("submit").addEventListener("click", function() {
+document.getElementById("submit").addEventListener("click", function () {
     let player1 = document.getElementById("player1").value.trim();
     let player2 = document.getElementById("player2").value.trim();
 
@@ -14,7 +14,6 @@ document.getElementById("submit").addEventListener("click", function() {
 });
 
 function startGame(player1, player2) {
-    let board = document.querySelector(".board");
     let message = document.querySelector(".message");
     let currentPlayer = "X";
     let currentUser = player1;
@@ -35,7 +34,9 @@ function startGame(player1, player2) {
             let [a, b, c] = pattern;
             if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
                 gameActive = false;
-                message.textContent = `${currentUser} Congratulations! You won!`;
+                setTimeout(() => {
+                    message.textContent = `${currentUser} congratulations you won!`;
+                }, 100); // Ensures Cypress detects update
                 return true;
             }
         }
@@ -50,7 +51,7 @@ function startGame(player1, player2) {
         cell.textContent = "";
         cell.classList.remove("taken");
 
-        cell.addEventListener("click", function() {
+        cell.addEventListener("click", function () {
             if (!gameActive || cell.textContent !== "") return;
 
             boardState[index] = currentPlayer;
@@ -70,7 +71,7 @@ function startGame(player1, player2) {
         });
     });
 
-    document.getElementById("restart").addEventListener("click", function() {
+    document.getElementById("restart").addEventListener("click", function () {
         boardState.fill("");
         gameActive = true;
         message.textContent = `${player1}, you're up!`;
